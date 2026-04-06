@@ -1,0 +1,37 @@
+月灯メモ｜GitHub Pages 設置メモ
+
+1. パソコンで GitHub にログインする
+2. 新しいリポジトリを作る
+   - 名前は好きでOK
+   - 例: moonlight-memo
+   - いちばん簡単なのは Public
+3. この前もらった zip を展開する
+4. 展開した中のファイルを、リポジトリのいちばん上にアップロードする
+   - index.html
+   - .nojekyll
+   - README.txt
+5. GitHub のそのリポジトリで Settings を開く
+6. 左のメニューから Pages を開く
+7. Build and deployment の Source を「Deploy from a branch」にする
+8. Branch を
+   - main
+   - /(root)
+   にする
+9. Save する
+10. 少し待つ
+11. Pages の URL が出たら開く
+12. iPhone の Safari でその URL を開く
+13. 共有ボタンから「ホーム画面に追加」
+14. 名前を「月灯メモ」にして追加
+
+うまくいかない時の確認
+- index.html がリポジトリのいちばん上にあるか
+- Pages の Branch が main になっているか
+- root になっているか
+- 公開まで少し待ったか
+
+メモ
+- 月灯メモは「本体編集」ではなく「保存・退避」寄り
+- 本体メモは iPhone のメモアプリ側
+- クリップボードのボタンは、GitHub Pages の https ページで試す
+- タイトルはアプリ内保存にも txt 保存名にも使われる

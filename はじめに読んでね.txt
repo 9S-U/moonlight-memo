@@ -1,0 +1,19 @@
+月灯メモ｜再まとめ版セット
+
+このフォルダには、月灯メモを GitHub Pages に置くための最新版一式が入っています。
+
+入っているもの
+- index.html … アプリ本体
+- apple-touch-icon.png … iPhoneホーム画面用アイコン
+- icon-192.png / icon-512.png … Webアプリアイコン
+- favicon.png … ブラウザ用アイコン
+- site.webmanifest … アプリ設定
+- .nojekyll … GitHub Pages 用
+- README_icon_setup.txt … アイコン設定メモ
+- GitHub_Pages_設置メモ.txt … GitHub Pages 公開手順
+- 月灯メモ_採用アイコン元画像.png … 採用した元画像
+
+おすすめの使い方
+1. このフォルダの中身を GitHub のリポジトリ直下に置く
+2. GitHub Pages を有効にする
+3. iPhone の Safari で開いてホーム画面に追加する

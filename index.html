@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1230">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <title>月灯メモ</title>
+  <style>
+    :root {
+      --bg-main: #070b1f;
+      --bg-grad-top: #0b1230;
+      --bg-grad-bottom: #050817;
+      --surface-1: #121936;
+      --surface-2: #182144;
+      --surface-3: #0d1430;
+      --border-soft: rgba(126, 161, 255, 0.22);
+      --border-strong: rgba(138, 191, 255, 0.40);
+      --text-main: #e8f1ff;
+      --text-sub: #aebbd8;
+      --text-faint: #7d8db3;
+      --accent-main: #8fd4ff;
+      --accent-soft: #5aa9df;
+      --accent-glow: rgba(143, 212, 255, 0.24);
+      --success-text: #a9ddff;
+      --danger-text: #ffb7c3;
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.28);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: linear-gradient(180deg, var(--bg-grad-top) 0%, var(--bg-grad-bottom) 100%);
+      color: var(--text-main);
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    .app-shell {
+      min-height: 100dvh;
+      padding: calc(env(safe-area-inset-top, 0px) + 24px) 16px calc(env(safe-area-inset-bottom, 0px) + 40px);
+    }
+
+    .memo-app {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .memo-header {
+      text-align: center;
+      padding-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .memo-header__subtitle {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .memo-header__title {
+      margin: 0;
+      font-size: clamp(1.95rem, 6vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .memo-header__copy {
+      margin: 0;
+      color: var(--text-sub);
+      font-size: 0.96rem;
+    }
+
+    .editor-card,
+    .recent-section {
+      background: linear-gradient(180deg, rgba(18, 25, 54, 0.96), rgba(13, 20, 48, 0.96));
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .editor-card {
+      display: grid;
+      gap: 18px;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field-label {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    .text-input,
+    .text-area {
+      width: 100%;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-main);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      font-size: 16px;
+    }
+
+    .text-input::placeholder,
+    .text-area::placeholder {
+      color: var(--text-faint);
+    }
+
+    .text-input:focus,
+    .text-area:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .text-area {
+      min-height: 260px;
+      resize: vertical;
+      line-height: 1.65;
+    }
+
+    .utility-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sub-button,
+    .primary-button,
+    .secondary-button,
+    .ghost-button,
+    .danger-button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .sub-button:active,
+    .primary-button:active,
+    .secondary-button:active,
+    .ghost-button:active,
+    .danger-button:active {
+      transform: translateY(1px);
+    }
+
+    .sub-button {
+      padding: 10px 14px;
+      background: rgba(143, 212, 255, 0.08);
+      color: var(--accent-main);
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+    }
+
+    .char-count {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 0.9rem;
+    }
+
+    .primary-action {
+      display: grid;
+      gap: 10px;
+    }
+
+    .primary-button {
+      width: 100%;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, #7dcfff, #5aa9df);
+      color: #04111f;
+      border-radius: 999px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(90, 169, 223, 0.3);
+    }
+
+    .secondary-button {
+      width: 100%;
+      padding: 13px 18px;
+      background: rgba(143, 212, 255, 0.08);
+      color: var(--accent-main);
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .clear-button {
+      width: 100%;
+      padding: 13px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-sub);
+      border: 1px solid rgba(126, 161, 255, 0.16);
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .save-feedback {
+      min-height: 1.2em;
+      margin: 0;
+      color: var(--success-text);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .save-feedback.is-error {
+      color: var(--danger-text);
+    }
+
+    .recent-section {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-head,
+    .section-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--text-main);
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .recent-empty {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 0.95rem;
+      padding: 4px 2px;
+    }
+
+    .recent-item {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(126, 161, 255, 0.12);
+      display: grid;
+      gap: 8px;
+    }
+
+    .recent-item__meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .recent-item__title {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-main);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .recent-item__date {
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .recent-item__preview {
+      margin: 0;
+      color: var(--text-sub);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .recent-item__actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-button,
+    .danger-button {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text-sub);
+    }
+
+    .danger-button {
+      color: var(--danger-text);
+      border-color: rgba(255, 183, 195, 0.18);
+      background: rgba(255, 183, 195, 0.04);
+    }
+
+    .helper-text {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 0.85rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 720px) {
+      .app-shell {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      .primary-action {
+        grid-template-columns: 1fr 1fr 1fr;
+        align-items: start;
+      }
+
+      .save-feedback {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <main class="memo-app">
+      <header class="memo-header">
+        <p class="memo-header__subtitle">Moonlight Memo</p>
+        <h1 class="memo-header__title">月灯メモ</h1>
+        <p class="memo-header__copy">ひろった言葉を、夜のうちにしまう</p>
+      </header>
+
+      <section class="editor-card" aria-labelledby="editor-heading">
+        <h2 id="editor-heading" class="visually-hidden">メモ入力</h2>
+
+        <div class="field-group field-group--title">
+          <label class="field-label" for="memo-title">タイトル</label>
+          <input id="memo-title" class="text-input" type="text" placeholder="ここにタイトルを入力" autocomplete="off">
+        </div>
+
+        <div class="field-group field-group--body">
+          <label class="field-label" for="memo-body">本文</label>
+          <textarea id="memo-body" class="text-area" placeholder="コピーした言葉をここに置く"></textarea>
+        </div>
+
+        <div class="utility-row">
+          <button id="paste-button" class="sub-button" type="button">クリップボードから貼る</button>
+          <p id="char-count" class="char-count">文字数：0字</p>
+        </div>
+
+        <div class="primary-action">
+          <button id="save-button" class="primary-button" type="button">保存する</button>
+          <button id="export-button" class="secondary-button" type="button">txtで保存</button>
+          <button id="clear-button" class="clear-button" type="button">クリア</button>
+          <p id="save-feedback" class="save-feedback" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="recent-section" aria-labelledby="recent-heading">
+        <div class="section-head">
+          <h2 id="recent-heading" class="section-title">最近の保存</h2>
+          <p class="helper-text">新しい順に5件まで</p>
+        </div>
+
+        <div id="recent-list" class="recent-list"></div>
+
+        <div class="section-foot">
+          <p class="helper-text">タップで本文を編集欄へ戻せるよ</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DB_NAME = 'moonlightMemoDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'memos';
+    const FEEDBACK_DURATION = 2200;
+    let dbPromise = null;
+    let feedbackTimer = null;
+
+    function getElements() {
+      return {
+        titleInput: document.getElementById('memo-title'),
+        bodyInput: document.getElementById('memo-body'),
+        charCount: document.getElementById('char-count'),
+        pasteButton: document.getElementById('paste-button'),
+        saveButton: document.getElementById('save-button'),
+        exportButton: document.getElementById('export-button'),
+        clearButton: document.getElementById('clear-button'),
+        feedback: document.getElementById('save-feedback'),
+        recentList: document.getElementById('recent-list'),
+      };
+    }
+
+    function countChars(text) {
+      return text.length;
+    }
+
+    function formatDateForDisplay(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '日時不明';
+      return new Intl.DateTimeFormat('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
+
+    function formatDateForTitle(date) {
+      return new Intl.DateTimeFormat('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
+
+    function formatDateForFile(date) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function makeAutoTitle(body) {
+      const firstLine = body.trim().split('\n')[0]?.trim();
+      if (firstLine) {
+        return firstLine.slice(0, 30);
+      }
+      return `${formatDateForTitle(new Date())} の保存`;
+    }
+
+    function sanitizeFileName(title) {
+      const safe = title
+        .replace(/[\\/:*?"<>|]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return (safe || '月灯メモ').slice(0, 50);
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function buildMemoObject({ title, body, source = 'manual' }) {
+      const trimmedBody = body.trim();
+      const finalTitle = title.trim() || makeAutoTitle(trimmedBody);
+      const now = new Date().toISOString();
+      return {
+        id: `memo_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`,
+        title: finalTitle,
+        body: trimmedBody,
+        createdAt: now,
+        updatedAt: now,
+        charCount: countChars(trimmedBody),
+        source,
+        isPinned: false,
+        tags: [],
+      };
+    }
+
+    function memoToTxtContent(memo) {
+      return [
+        `タイトル：${memo.title}`,
+        `保存日時：${formatDateForDisplay(memo.createdAt)}`,
+        `文字数：${memo.charCount}`,
+        '',
+        '--------------------------------',
+        '',
+        memo.body,
+      ].join('\n');
+    }
+
+    function exportMemoAsTxt(memo) {
+      const content = memoToTxtContent(memo);
+      const fileName = `${sanitizeFileName(memo.title)}_${formatDateForFile(new Date())}.txt`;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function openDB() {
+      if (dbPromise) return dbPromise;
+      dbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            store.createIndex('createdAt', 'createdAt', { unique: false });
+            store.createIndex('updatedAt', 'updatedAt', { unique: false });
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('データベースを開けませんでした。'));
+      });
+      return dbPromise;
+    }
+
+    async function saveMemoToDB(memo) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.put(memo);
+        tx.oncomplete = () => resolve(memo);
+        tx.onerror = () => reject(tx.error || new Error('保存に失敗しました。'));
+      });
+    }
+
+    async function getRecentMemos(limit = 5) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => {
+          const items = request.result || [];
+          items.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+          resolve(items.slice(0, limit));
+        };
+        request.onerror = () => reject(request.error || new Error('一覧取得に失敗しました。'));
+      });
+    }
+
+    async function deleteMemoById(id) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error('削除に失敗しました。'));
+      });
+    }
+
+    function updateCharCount(elements) {
+      const count = countChars(elements.bodyInput.value);
+      elements.charCount.textContent = `文字数：${count}字`;
+    }
+
+    function showFeedback(elements, message, isError = false) {
+      elements.feedback.textContent = message;
+      elements.feedback.classList.toggle('is-error', isError);
+      window.clearTimeout(feedbackTimer);
+      feedbackTimer = window.setTimeout(() => {
+        elements.feedback.textContent = '';
+        elements.feedback.classList.remove('is-error');
+      }, FEEDBACK_DURATION);
+    }
+
+    function clearEditor(elements) {
+      elements.titleInput.value = '';
+      elements.bodyInput.value = '';
+      updateCharCount(elements);
+      elements.titleInput.focus();
+    }
+
+    async function readClipboardToBody(elements) {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        throw new Error('このブラウザではクリップボード読み取りに対応していません。');
+      }
+      const text = await navigator.clipboard.readText();
+      if (!text) {
+        throw new Error('クリップボードに文字が見つかりませんでした。');
+      }
+      elements.bodyInput.value = text;
+      updateCharCount(elements);
+      elements.bodyInput.focus();
+      elements.bodyInput.setSelectionRange(elements.bodyInput.value.length, elements.bodyInput.value.length);
+    }
+
+    function buildRecentItemHtml(memo) {
+      return `
+        <article class="recent-item" data-memo-id="${escapeHtml(memo.id)}">
+          <div class="recent-item__meta">
+            <h3 class="recent-item__title">${escapeHtml(memo.title)}</h3>
+            <time class="recent-item__date">${escapeHtml(formatDateForDisplay(memo.updatedAt))}</time>
+          </div>
+          <p class="recent-item__preview">${escapeHtml(memo.body)}</p>
+          <div class="recent-item__actions">
+            <button class="ghost-button" type="button" data-action="load">編集欄に戻す</button>
+            <button class="danger-button" type="button" data-action="delete">削除</button>
+          </div>
+        </article>
+      `;
+    }
+
+    async function renderRecentMemos(elements) {
+      try {
+        const memos = await getRecentMemos(5);
+        if (!memos.length) {
+          elements.recentList.innerHTML = '<p class="recent-empty">まだ保存はないよ。ひろった言葉を、ここへ最初に置いてみて。</p>';
+          return;
+        }
+        elements.recentList.innerHTML = memos.map(buildRecentItemHtml).join('');
+      } catch (error) {
+        elements.recentList.innerHTML = `<p class="recent-empty">一覧の読み込みに失敗しました。${escapeHtml(error.message || '')}</p>`;
+      }
+    }
+
+    async function handleSave(elements) {
+      const title = elements.titleInput.value;
+      const body = elements.bodyInput.value;
+      if (!body.trim()) {
+        showFeedback(elements, '本文が空のままだから、まだ保存できないよ。', true);
+        return;
+      }
+      const memo = buildMemoObject({ title, body, source: 'manual' });
+      await saveMemoToDB(memo);
+      clearEditor(elements);
+      await renderRecentMemos(elements);
+      showFeedback(elements, '月灯にしまったよ');
+    }
+
+    function handleExport(elements) {
+      const title = elements.titleInput.value;
+      const body = elements.bodyInput.value;
+      if (!body.trim()) {
+        showFeedback(elements, '本文が空のままだから、txtにはまだできないよ。', true);
+        return;
+      }
+      const memo = buildMemoObject({ title, body, source: 'manual' });
+      exportMemoAsTxt(memo);
+      showFeedback(elements, 'txtで保存したよ');
+    }
+
+    function handleClear(elements) {
+      const hasTitle = elements.titleInput.value.trim().length > 0;
+      const hasBody = elements.bodyInput.value.trim().length > 0;
+
+      if (!hasTitle && !hasBody) {
+        clearEditor(elements);
+        showFeedback(elements, '入力欄はもう空だよ');
+        return;
+      }
+
+      const ok = window.confirm('いま入力中のタイトルと本文をクリアする？');
+      if (!ok) return;
+
+      clearEditor(elements);
+      showFeedback(elements, '入力欄をクリアしたよ');
+    }
+
+    async function handleRecentListClick(elements, event) {
+      const actionButton = event.target.closest('button[data-action]');
+      if (!actionButton) return;
+      const recentItem = actionButton.closest('.recent-item');
+      if (!recentItem) return;
+      const memoId = recentItem.dataset.memoId;
+      if (!memoId) return;
+
+      try {
+        const memos = await getRecentMemos(5);
+        const memo = memos.find((item) => item.id === memoId);
+        if (!memo) {
+          showFeedback(elements, 'そのメモが見つからなかったよ。', true);
+          return;
+        }
+
+        const action = actionButton.dataset.action;
+        if (action === 'load') {
+          elements.titleInput.value = memo.title;
+          elements.bodyInput.value = memo.body;
+          updateCharCount(elements);
+          elements.bodyInput.focus();
+          showFeedback(elements, '編集欄へ戻したよ');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        if (action === 'delete') {
+          const ok = window.confirm(`「${memo.title}」を削除する？`);
+          if (!ok) return;
+          await deleteMemoById(memo.id);
+          await renderRecentMemos(elements);
+          showFeedback(elements, '月灯から外したよ');
+        }
+      } catch (error) {
+        showFeedback(elements, error.message || '処理に失敗しました。', true);
+      }
+    }
+
+    async function init() {
+      const elements = getElements();
+      updateCharCount(elements);
+      await renderRecentMemos(elements);
+
+      elements.bodyInput.addEventListener('input', () => updateCharCount(elements));
+      elements.pasteButton.addEventListener('click', async () => {
+        try {
+          await readClipboardToBody(elements);
+          showFeedback(elements, 'クリップボードから入れたよ');
+        } catch (error) {
+          showFeedback(elements, error.message || '貼り付けに失敗しました。', true);
+        }
+      });
+      elements.saveButton.addEventListener('click', async () => {
+        try {
+          await handleSave(elements);
+        } catch (error) {
+          showFeedback(elements, error.message || '保存に失敗しました。', true);
+        }
+      });
+      elements.exportButton.addEventListener('click', () => {
+        try {
+          handleExport(elements);
+        } catch (error) {
+          showFeedback(elements, error.message || 'txt保存に失敗しました。', true);
+        }
+      });
+      elements.clearButton.addEventListener('click', () => {
+        try {
+          handleClear(elements);
+        } catch (error) {
+          showFeedback(elements, error.message || 'クリアに失敗しました。', true);
+        }
+      });
+      elements.recentList.addEventListener('click', (event) => handleRecentListClick(elements, event));
+    }
+
+    init().catch((error) => {
+      console.error(error);
+      const elements = getElements();
+      showFeedback(elements, '初期化に失敗しました。ページを再読み込みしてみてね。', true);
+    });
+  </script>
+</body>
+</html>
